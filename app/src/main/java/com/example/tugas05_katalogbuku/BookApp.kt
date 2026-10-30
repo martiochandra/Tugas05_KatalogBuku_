@@ -17,14 +17,20 @@ fun BookApp() {
     ) {
 
         // 1. Rute Home
+        // 1. Rute Home
         composable(Screen.Home.route) {
             HomeScreen(
-                books = BookRepository.books, // Membaca langsung dari Repositori Global
+                books = BookRepository.books,
                 onBookClick = { bookId ->
-                    navController.navigate(Screen.Detail.createRoute(bookId))
+                    navController.navigate(Screen.Detail.createRoute(bookId)) {
+                        // Mencegah penumpukan layar yang sama di back stack
+                        launchSingleTop = true
+                    }
                 },
                 onAddClick = {
-                    navController.navigate(Screen.Form.route)
+                    navController.navigate(Screen.Form.route) {
+                        launchSingleTop = true
+                    }
                 }
             )
         }

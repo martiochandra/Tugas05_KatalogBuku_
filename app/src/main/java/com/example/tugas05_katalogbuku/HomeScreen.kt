@@ -42,7 +42,8 @@ fun HomeScreen(
             modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            // Ubah baris di bawah ini agar bagian bawahnya memiliki ruang ekstra (88.dp)
+            contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(books) { book ->

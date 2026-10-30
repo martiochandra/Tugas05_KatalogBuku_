@@ -1,4 +1,4 @@
-package com.example.tugas05_katalogbuku
+package com.example.tugas05_katalogbuku //
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
@@ -9,48 +9,50 @@ import androidx.navigation.navArgument
 
 @Composable
 fun BookApp() {
-    // NavController diinisialisasi HANYA di sini
     val navController = rememberNavController()
 
-    // NavHost adalah wadah yang mengatur rute mana yang sedang aktif
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route // Layar pertama yang dibuka
+        startDestination = Screen.Home.route
     ) {
 
-        // 1. Rute Home / List Screen
+        // 1. Rute Home
         composable(Screen.Home.route) {
             HomeScreen(
-                books = dummyBooks, // Mengambil data in-memory dari Book.kt
+                books = BookRepository.books, // Membaca langsung dari Repositori Global
                 onBookClick = { bookId ->
-                    // TODO Hari 3: Navigasi ke layar Detail dengan membawa ID
-                    // Menjalankan navigasi dengan ID yang dinamis (misal: "detail/1")
                     navController.navigate(Screen.Detail.createRoute(bookId))
-
                 },
                 onAddClick = {
-                    // TODO Hari 4: Navigasi ke layar Form Tambah
+                    navController.navigate(Screen.Form.route)
                 }
             )
         }
 
-        // Rute Screen.Detail dan Screen.Form akan kita tambahkan di Hari ke-3 dan ke-4
+        // 2. Rute Detail
         composable(
-            route = Screen.Detail.route, // Menangkap rute "detail/{bookId}"
-            arguments = listOf(navArgument("bookId") { type = NavType.IntType }) // Deklarasi tipe argumen
+            route = Screen.Detail.route,
+            arguments = listOf(navArgument("bookId") { type = NavType.IntType })
         ) { backStackEntry ->
-            // Mengambil nilai ID dari URL/Route
             val bookId = backStackEntry.arguments?.getInt("bookId") ?: -1
 
-            // Mencari buku di database (in-memory) berdasarkan ID
-            val selectedBook = dummyBooks.find { it.id == bookId }
+            // Mencari buku menggunakan Repositori Global
+            val selectedBook = BookRepository.getBookById(bookId)
 
-            // Memanggil DetailScreen tanpa mengirimkan NavController (Stateless)
             DetailScreen(
                 book = selectedBook,
-                onNavigateUp = {
-                    // popBackStack akan mencabut layar Detail dari tumpukan memori
-                    // dan mengembalikan user ke layar sebelumnya (Home)
+                onNavigateUp = { navController.popBackStack() }
+            )
+        }
+
+        // 3. Rute Form Tambah Buku
+        composable(Screen.Form.route) {
+            FormScreen(
+                onNavigateUp = { navController.popBackStack() },
+                onSaveClick = { title, author, description ->
+                    // Menyimpan buku secara permanen ke Repositori Global
+                    BookRepository.addBook(title, author, description)
+
                     navController.popBackStack()
                 }
             )

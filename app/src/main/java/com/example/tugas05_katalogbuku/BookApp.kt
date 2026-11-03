@@ -1,6 +1,9 @@
 package com.example.tugas05_katalogbuku //
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -8,8 +11,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 
 @Composable
-fun BookApp() {
+fun BookApp(
+    // Menginisialisasi ViewModel di tingkat NavHost
+    viewModel: CatalogViewModel = viewModel()
+) {
     val navController = rememberNavController()
+
+    // SYARAT WAJIB: Compose mengonsumsi state dengan collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     NavHost(
         navController = navController,
@@ -17,13 +26,11 @@ fun BookApp() {
     ) {
 
         // 1. Rute Home
-        // 1. Rute Home
         composable(Screen.Home.route) {
             HomeScreen(
-                books = BookRepository.books,
+                uiState = uiState, // Mengirim UiState secara utuh ke layar
                 onBookClick = { bookId ->
                     navController.navigate(Screen.Detail.createRoute(bookId)) {
-                        // Mencegah penumpukan layar yang sama di back stack
                         launchSingleTop = true
                     }
                 },
@@ -42,8 +49,8 @@ fun BookApp() {
         ) { backStackEntry ->
             val bookId = backStackEntry.arguments?.getInt("bookId") ?: -1
 
-            // Mencari buku menggunakan Repositori Global
-            val selectedBook = BookRepository.getBookById(bookId)
+            // Meminta data satu buku spesifik dari ViewModel
+            val selectedBook = viewModel.getBookById(bookId)
 
             DetailScreen(
                 book = selectedBook,
@@ -56,8 +63,8 @@ fun BookApp() {
             FormScreen(
                 onNavigateUp = { navController.popBackStack() },
                 onSaveClick = { title, author, description ->
-                    // Menyimpan buku secara permanen ke Repositori Global
-                    BookRepository.addBook(title, author, description)
+                    // Mengirim event ke ViewModel untuk memproses penambahan data
+                    viewModel.addBook(title, author, description)
 
                     navController.popBackStack()
                 }

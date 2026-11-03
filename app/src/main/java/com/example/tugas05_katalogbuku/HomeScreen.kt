@@ -12,16 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    books: List<Book>,
-    onBookClick: (Int) -> Unit, // Callback agar komponen ini Stateless terhadap navigasi
-    onAddClick: () -> Unit,     // Callback untuk tombol tambah
+    // SYARAT WAJIB: Screen hanya menerima UiState dan callback
+    uiState: CatalogUiState,
+    onBookClick: (Int) -> Unit,
+    onAddClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
+        modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = { Text("Katalog Buku", fontWeight = FontWeight.Bold) },
@@ -37,16 +38,15 @@ fun HomeScreen(
             }
         }
     ) { innerPadding ->
-        // LazyColumn wajib digunakan sesuai instruksi tugas
         LazyColumn(
-            modifier = modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-            // Ubah baris di bawah ini agar bagian bawahnya memiliki ruang ekstra (88.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(books) { book ->
+            // Mengambil daftar buku dari dalam UiState
+            items(uiState.bookList) { book ->
                 BookListItem(book = book, onClick = { onBookClick(book.id) })
             }
         }

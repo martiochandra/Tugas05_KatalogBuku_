@@ -38,7 +38,9 @@ fun BookApp(
                     navController.navigate(Screen.Form.route) {
                         launchSingleTop = true
                     }
-                }
+                },
+                onClearClick = { viewModel.clearBooks() },
+                onRefreshClick = { viewModel.refreshBooks() }
             )
         }
 

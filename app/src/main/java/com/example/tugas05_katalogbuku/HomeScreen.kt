@@ -7,7 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,62 +22,56 @@ fun HomeScreen(
     uiState: CatalogUiState,
     onBookClick: (Int) -> Unit,
     onAddClick: () -> Unit,
-    onClearClick: () -> Unit,   // Callback baru
-    onRefreshClick: () -> Unit, // Callback baru
+    onClearClick: () -> Unit,
+    onRefreshClick: () -> Unit,
+    // Dua fungsi tambahan (Kita gunakan langsung dari parameter, namun kita ambil dari parent jika perlu)
+    // Untuk mempersingkat, kita akan panggil viewModel dari parameter atau tambahkan callback
+    // (Biar tidak merombak NavHost lagi, kita tambahkan opsional callback)
+    onToggleDarkClick: () -> Unit = {},
+    onToggleSortClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text("Katalog Buku", fontWeight = FontWeight.Bold) },
-                actions = {
-                    // Tombol Event Refresh
-                    IconButton(onClick = onRefreshClick) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh Data")
-                    }
-                    // Tombol Event Clear
-                    IconButton(onClick = onClearClick) {
-                        Icon(Icons.Default.Delete, contentDescription = "Hapus Semua")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddClick) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Buku Baru")
-            }
-        }
-    ) { innerPadding ->
-
-        // Logika Render UI (Non-Happy Path vs Happy Path)
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            when {
-                // KONDISI 1: Loading
-                uiState.isLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-                // KONDISI 2: Empty State (List Kosong)
-                uiState.bookList.isEmpty() -> {
-                    Text(
-                        text = "Katalog kosong. Silakan tambah atau refresh buku.",
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.align(Alignment.Center)
+    // Menerapkan MaterialTheme dinamis berdasarkan preferensi DataStore
+    MaterialTheme(
+        colorScheme = if (uiState.isDarkMode) darkColorScheme() else lightColorScheme()
+    ) {
+        Scaffold(
+            modifier = modifier.fillMaxSize(),
+            topBar = {
+                TopAppBar(
+                    title = { Text("Katalog", fontWeight = FontWeight.Bold) },
+                    actions = {
+                        // Tombol Toggle Urutan (Sort)
+                        IconButton(onClick = onToggleSortClick) {
+                            Icon(Icons.Default.List, contentDescription = "Urutkan Abjad")
+                        }
+                        // Tombol Toggle Mode Gelap
+                        IconButton(onClick = onToggleDarkClick) {
+                            Icon(Icons.Default.Settings, contentDescription = "Mode Gelap")
+                        }
+                        IconButton(onClick = onClearClick) {
+                            Icon(Icons.Default.Delete, contentDescription = "Hapus Semua")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
+                )
+            },
+            floatingActionButton = {
+                FloatingActionButton(onClick = onAddClick) {
+                    Icon(Icons.Default.Add, contentDescription = "Tambah")
                 }
-                // KONDISI 3: Happy Path (Data Tersedia)
-                else -> {
+            }
+        ) { innerPadding ->
+            Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+                if (uiState.bookList.isEmpty()) {
+                    Text("Katalog kosong.", modifier = Modifier.align(Alignment.Center))
+                } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
+                        contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(uiState.bookList) { book ->
@@ -92,9 +87,7 @@ fun HomeScreen(
 @Composable
 fun BookListItem(book: Book, onClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {

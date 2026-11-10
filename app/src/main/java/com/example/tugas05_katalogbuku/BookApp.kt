@@ -15,18 +15,17 @@ import androidx.navigation.navArgument
 fun BookApp() {
     val context = LocalContext.current
 
-    // 1. Menginisialisasi Database dan Repository
+    // Inisialisasi Database dan 2 Repository
     val database = BookDatabase.getDatabase(context)
-    val repository = BookRepository(database.bookDao())
+    val bookRepository = BookRepository(database.bookDao())
+    val userPrefsRepository = UserPreferencesRepository(context.dataStore) // Tambahan
 
-    // 2. Memanggil ViewModel menggunakan Factory agar tersambung ke Repository
     val viewModel: CatalogViewModel = viewModel(
-        factory = CatalogViewModel.Factory(repository)
+        factory = CatalogViewModel.Factory(bookRepository, userPrefsRepository) // Tambahan
     )
 
     val navController = rememberNavController()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route
@@ -47,7 +46,9 @@ fun BookApp() {
                     }
                 },
                 onClearClick = { viewModel.clearBooks() },
-                onRefreshClick = { viewModel.refreshBooks() }
+                onRefreshClick = { viewModel.refreshBooks() }, // <-- PASTIKAN ADA KOMA DI SINI
+                onToggleDarkClick = { viewModel.toggleDarkMode(uiState.isDarkMode) },
+                onToggleSortClick = { viewModel.toggleSortOrder(uiState.isSortByTitle) }
             )
         }
 

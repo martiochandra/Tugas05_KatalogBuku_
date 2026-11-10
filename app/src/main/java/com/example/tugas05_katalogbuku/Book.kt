@@ -1,9 +1,16 @@
 package com.example.tugas05_katalogbuku // Sesuaikan dengan package Anda!
 
-// Model data buku HANYA menyimpan struktur data (bersih dari state)
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+// @Entity mengubah data class ini menjadi tabel database bernama "books"
+@Entity(tableName = "books")
 data class Book(
-    val id: Int,
+    @PrimaryKey(autoGenerate = true) // Auto-increment ID
+    val id: Int = 0,
     val title: String,
     val author: String,
-    val description: String
+    val description: String,
+
+    // Syarat wajib terpenuhi: >4 field (id, title, author, description)
 )

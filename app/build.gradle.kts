@@ -1,7 +1,10 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
+    kotlin("kapt") // GANTI BARIS INI: gunakan kotlin("kapt") bukan id("...")
 }
 
 android {
@@ -31,6 +34,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    kotlinOptions {
+        jvmTarget = "11"
+        freeCompilerArgs += listOf("-Xmetadata-version=2.0.0")
+    }
     buildFeatures {
         compose = true
     }
@@ -57,10 +64,15 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     // Room Database
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
-
+    implementation("androidx.room:room-runtime:2.7.0-alpha13")
+    implementation("androidx.room:room-ktx:2.7.0-alpha13")
+    kapt("androidx.room:room-compiler:2.7.0-alpha13")
 // DataStore Preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+}
+
+kapt {
+    arguments {
+        arg("kotlin.metadata.strict.version.check", "false")
+    }
 }
